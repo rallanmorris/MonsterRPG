@@ -209,6 +209,7 @@ public class BattleSystem : MonoBehaviour
 
         dialogBox.UpdateMoveSelection(currentMove, playerUnit.Monster.Moves[currentMove]);
 
+        //When move is selected
         if (Input.GetKeyDown(KeyCode.Z))
         {
             dialogBox.EnableMoveSelector(false);
