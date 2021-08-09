@@ -9,6 +9,7 @@ public class Oscillator : MonoBehaviour
     [SerializeField] Vector3 movementVector = new Vector3(10f, 10f, 10f);
     [SerializeField] float period = 2f;
     [SerializeField] Image crosshairs;
+    [SerializeField] BattleUnit enemyUnit;
 
     [Range(0, 1)] float movementFactor; //0 for not moved, 1 for fully moved
 
@@ -16,11 +17,13 @@ public class Oscillator : MonoBehaviour
     Vector3 currentPos;
 
     bool paused;
+    bool enemyHit;
 
     // Start is called before the first frame update
     void Start()
     {
         paused = false;
+        enemyHit = false;
         startingPos = transform.position;
         currentPos = startingPos;
     }
@@ -46,7 +49,25 @@ public class Oscillator : MonoBehaviour
         {
             transform.position = currentPos;
         }
-        
+        Debug.Log(enemyHit);
+    }
+
+    private void OnTriggerStay2D(Collider2D collided)
+    {
+        if (collided == enemyUnit.GetComponent<CircleCollider2D>())
+        {
+            enemyHit = true;
+        }
+        else
+            enemyHit = false;
+    }
+
+    private void OnTriggerExit2D(Collider2D collided)
+    {
+        if (collided == enemyUnit.GetComponent<CircleCollider2D>())
+        {
+            enemyHit = false;
+        }
     }
 
     public void PauseMoving()
@@ -54,7 +75,7 @@ public class Oscillator : MonoBehaviour
         paused = true;
     }
 
-    public void continueMoving()
+    public void ContinueMoving()
     {
         paused = false;
     }
@@ -62,5 +83,10 @@ public class Oscillator : MonoBehaviour
     public void EnableAim(bool enabled)
     {
         crosshairs.enabled = enabled;
+    }
+
+    public bool HitEnemy()
+    {
+        return enemyHit;
     }
 }

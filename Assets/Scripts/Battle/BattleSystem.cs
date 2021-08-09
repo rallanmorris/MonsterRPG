@@ -65,30 +65,41 @@ public class BattleSystem : MonoBehaviour
         playerAiming.EnableAim(false);
 
         state = BattleState.Busy;
-        var move = playerUnit.Monster.Moves[currentMove];
-        yield return dialogBox.TypeDialog($"{playerUnit.Monster.Base.Name} used {move.Base.Name}");
 
-        playerUnit.PlayAttackAnimation();
-        yield return new WaitForSeconds(1f);
-
-        enemyUnit.PlayHitAnimation();
-
-        var damageDetails = enemyUnit.Monster.TakeDamage(move, playerUnit.Monster);
-        yield return enemyHud.UpdateHP();
-        yield return ShowDamageDetails(damageDetails);
-
-        if (damageDetails.Fainted)
+        if (playerAiming.HitEnemy())
         {
-            yield return dialogBox.TypeDialog($"Nice Job Michael Vick! {enemyUnit.Monster.Base.Name} has been annihilated");
-            enemyUnit.PlayDefeatAnimation();
+            yield return dialogBox.TypeDialog("Got em!");
+            var move = playerUnit.Monster.Moves[currentMove];
+            yield return dialogBox.TypeDialog($"{playerUnit.Monster.Base.Name} used {move.Base.Name}");
 
-            yield return new WaitForSeconds(2f);
-            OnBattleOver(true);
+            playerUnit.PlayAttackAnimation();
+            yield return new WaitForSeconds(1f);
+
+            enemyUnit.PlayHitAnimation();
+
+            var damageDetails = enemyUnit.Monster.TakeDamage(move, playerUnit.Monster);
+            yield return enemyHud.UpdateHP();
+            yield return ShowDamageDetails(damageDetails);
+
+            if (damageDetails.Fainted)
+            {
+                yield return dialogBox.TypeDialog($"Nice Job Michael Vick! {enemyUnit.Monster.Base.Name} has been annihilated");
+                enemyUnit.PlayDefeatAnimation();
+
+                yield return new WaitForSeconds(2f);
+                OnBattleOver(true);
+            }
+            else
+            {
+                StartCoroutine(EnemyMove());
+            }
         }
         else
         {
+            yield return dialogBox.TypeDialog("Missed em :(");
             StartCoroutine(EnemyMove());
         }
+        
     }
 
     IEnumerator EnemyMove()
@@ -223,9 +234,10 @@ public class BattleSystem : MonoBehaviour
         {
             dialogBox.EnableMoveSelector(false);
             dialogBox.EnableDialogText(true);
+            StartCoroutine(dialogBox.TypeDialog("Aim well"));
 
             playerAiming.EnableAim(true);
-            playerAiming.continueMoving();
+            playerAiming.ContinueMoving();
             state = BattleState.PlayerAim;
             //StartCoroutine(PerformPlayerMove());
         }
@@ -237,6 +249,7 @@ public class BattleSystem : MonoBehaviour
         if (Input.GetKeyDown(KeyCode.Z))
         {
             playerAiming.PauseMoving();
+            dialogBox.EnableDialogText(true);
             StartCoroutine(PerformPlayerMove());
         }
     }
