@@ -9,18 +9,22 @@ public class BattleUnit : MonoBehaviour
     [SerializeField] MonstersBase _base;
     [SerializeField] int level;
     [SerializeField] bool isPlayerUnit;
+    [SerializeField] Image crosshairs;
 
     public Monster Monster { get; set; }
 
     Image image;
     Vector3 originalPos;
     Color originalColor;
+    Vector3 startAimPos;
 
     private void Awake()
     {
         image = GetComponent<Image>();
         originalPos = image.transform.localPosition;
         originalColor = image.color;
+
+        startAimPos = crosshairs.transform.localPosition;
     }
 
     public void Setup()
@@ -59,6 +63,14 @@ public class BattleUnit : MonoBehaviour
             sequence.Append(image.transform.DOLocalMoveX(originalPos.x - 50f, 0.25f));
 
         sequence.Append(image.transform.DOLocalMoveX(originalPos.x, 0.25f));
+    }
+
+    public void PlayAimAnimation()
+    {
+        var sequence = DOTween.Sequence();
+        sequence.Append(crosshairs.transform.DOLocalMoveY(startAimPos.y + 100f, 0.5f));
+        sequence.Append(crosshairs.transform.DOLocalMoveY(startAimPos.y - 100f, 0.5f));
+        //sequence.Kill();
     }
 
     public void PlayHitAnimation()

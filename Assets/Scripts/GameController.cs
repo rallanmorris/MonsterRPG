@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 
 public enum GameState { FreeRoam, Battle}
-
+/*GameController class */
 public class GameController : MonoBehaviour
 {
     [SerializeField] PlayerController playerController;
@@ -12,6 +12,8 @@ public class GameController : MonoBehaviour
 
     GameState state;
 
+    //When player encounters a monster start battle
+    //When Battle ends end battle
     private void Start()
     {
         playerController.OnEncountered += StartBattle;

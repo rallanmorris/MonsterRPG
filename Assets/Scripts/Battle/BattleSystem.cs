@@ -59,7 +59,6 @@ public class BattleSystem : MonoBehaviour
 
     IEnumerator PerformPlayerMove()
     {
-        state = BattleState.Busy;
 
         var move = playerUnit.Monster.Moves[currentMove];
         yield return dialogBox.TypeDialog($"{playerUnit.Monster.Base.Name} used {move.Base.Name}");
@@ -86,6 +85,48 @@ public class BattleSystem : MonoBehaviour
             StartCoroutine(EnemyMove());
         }
     }
+
+    IEnumerator PlayerAim()
+    {
+        state = BattleState.Busy;
+        dialogBox.EnableActionSelector(false);
+        dialogBox.EnableDialogText(false);
+        dialogBox.EnableMoveSelector(false);
+
+        yield return new WaitForEndOfFrame();
+
+        //Moves crosshairs until player fires
+        MoveCrosshairs();
+
+        StartCoroutine(PerformPlayerMove());
+
+    }
+
+    void MoveCrosshairs()
+    {
+        do
+        {
+            playerUnit.PlayAimAnimation();
+            Debug.Log("Aiming");
+        }
+        while (!CheckForPlayerFire());
+
+    }
+
+    bool CheckForPlayerFire()
+    {
+        if (Input.GetKeyDown(KeyCode.Z))
+        {
+            Debug.Log("true");
+            return true;
+        }
+        else
+        {
+            Debug.Log("false");
+            return false;
+        }
+    }
+
 
     IEnumerator EnemyMove()
     {
@@ -141,6 +182,7 @@ public class BattleSystem : MonoBehaviour
         {
             HandleMoveSelection();
         }
+
     }
 
 
@@ -214,7 +256,8 @@ public class BattleSystem : MonoBehaviour
         {
             dialogBox.EnableMoveSelector(false);
             dialogBox.EnableDialogText(true);
-            StartCoroutine(PerformPlayerMove());
+            StartCoroutine(PlayerAim());
+            //StartCoroutine(PerformPlayerMove());
         }
     }
 }
