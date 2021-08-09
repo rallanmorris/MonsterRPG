@@ -3,12 +3,13 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public enum BattleState { Start, PlayerAction, PlayerMove, EnemyMove, Busy }
+public enum BattleState { Start, PlayerAction, PlayerMove, PlayerAim, EnemyMove, Busy }
 
 public class BattleSystem : MonoBehaviour
 {
     [SerializeField] BattleUnit playerUnit;
     [SerializeField] BattleHud playerHud;
+    [SerializeField] Oscillator playerAiming;
 
     [SerializeField] BattleUnit enemyUnit;
     [SerializeField] BattleHud enemyHud;
@@ -31,6 +32,7 @@ public class BattleSystem : MonoBehaviour
     {
         playerUnit.Setup();
         playerHud.SetData(playerUnit.Monster);
+        playerAiming.EnableAim(false);
 
         enemyUnit.Setup();
         enemyHud.SetData(enemyUnit.Monster);
@@ -59,8 +61,10 @@ public class BattleSystem : MonoBehaviour
 
     IEnumerator PerformPlayerMove()
     {
-        state = BattleState.Busy;
+        yield return new WaitForSeconds(1f);
+        playerAiming.EnableAim(false);
 
+        state = BattleState.Busy;
         var move = playerUnit.Monster.Moves[currentMove];
         yield return dialogBox.TypeDialog($"{playerUnit.Monster.Base.Name} used {move.Base.Name}");
 
@@ -141,6 +145,11 @@ public class BattleSystem : MonoBehaviour
         {
             HandleMoveSelection();
         }
+
+        else if(state == BattleState.PlayerAim)
+        {
+            HandlePlayerAim();
+        }
     }
 
 
@@ -214,6 +223,20 @@ public class BattleSystem : MonoBehaviour
         {
             dialogBox.EnableMoveSelector(false);
             dialogBox.EnableDialogText(true);
+
+            playerAiming.EnableAim(true);
+            playerAiming.continueMoving();
+            state = BattleState.PlayerAim;
+            //StartCoroutine(PerformPlayerMove());
+        }
+    }
+
+    void HandlePlayerAim()
+    {
+
+        if (Input.GetKeyDown(KeyCode.Z))
+        {
+            playerAiming.PauseMoving();
             StartCoroutine(PerformPlayerMove());
         }
     }

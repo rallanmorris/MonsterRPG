@@ -9048,6 +9048,7 @@ GameObject:
   - component: {fileID: 1366145741}
   - component: {fileID: 1366145743}
   - component: {fileID: 1366145742}
+  - component: {fileID: 1366145744}
   m_Layer: 0
   m_Name: Crosshairs
   m_TagString: Untagged
@@ -9071,7 +9072,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 0, y: -0.0000013404}
+  m_AnchoredPosition: {x: 0, y: -100}
   m_SizeDelta: {x: 100, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1366145742
@@ -9111,6 +9112,21 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1366145740}
   m_CullTransparentMesh: 0
+--- !u!114 &1366145744
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1366145740}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d5fbbc71e1ec0f549b45c126689d3245, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  movementVector: {x: 0, y: 5, z: 0}
+  period: 2
+  crosshairs: {fileID: 1366145742}
 --- !u!1 &1377942141
 GameObject:
   m_ObjectHideFlags: 0
@@ -9589,7 +9605,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &1636376681
 Transform:
   m_ObjectHideFlags: 0
@@ -9620,6 +9636,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   playerUnit: {fileID: 851136416}
   playerHud: {fileID: 281373050}
+  playerAiming: {fileID: 1366145744}
   enemyUnit: {fileID: 1213731985}
   enemyHud: {fileID: 1888598143}
   dialogBox: {fileID: 1242967270}
