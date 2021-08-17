@@ -10,6 +10,7 @@ public class BattleSystem : MonoBehaviour
     [SerializeField] BattleUnit playerUnit;
     [SerializeField] BattleHud playerHud;
     [SerializeField] Oscillator playerAiming;
+    [SerializeField] GameObject aimParent;
 
     [SerializeField] BattleUnit enemyUnit;
     [SerializeField] BattleHud enemyHud;
@@ -39,7 +40,7 @@ public class BattleSystem : MonoBehaviour
 
         dialogBox.SetMoveNames(playerUnit.Monster.Moves);
 
-        yield return dialogBox.TypeDialog($"Oh Shit! a Wild {enemyUnit.Monster.Base.Name} appeared");
+        yield return dialogBox.TypeDialog($"Oh noooo a Wild {enemyUnit.Monster.Base.Name} appeared");
 
         PlayerAction();
     }
@@ -47,7 +48,7 @@ public class BattleSystem : MonoBehaviour
     private void PlayerAction()
     {
         state = BattleState.PlayerAction;
-        StartCoroutine(dialogBox.TypeDialog("The fuck you gonna do about it?"));
+        StartCoroutine(dialogBox.TypeDialog("Do somthin bout it"));
         dialogBox.EnableActionSelector(true);
     }
 
@@ -66,9 +67,10 @@ public class BattleSystem : MonoBehaviour
 
         state = BattleState.Busy;
 
-        if (playerAiming.HitEnemy())
+        //Switch for whether hit enemy 1 - 3 times
+        if (playerAiming.GetHits() > 0)
         {
-            yield return dialogBox.TypeDialog("Got em!");
+            yield return dialogBox.TypeDialog("SUCCESS!");
             var move = playerUnit.Monster.Moves[currentMove];
             yield return dialogBox.TypeDialog($"{playerUnit.Monster.Base.Name} used {move.Base.Name}");
 
@@ -83,7 +85,7 @@ public class BattleSystem : MonoBehaviour
 
             if (damageDetails.Fainted)
             {
-                yield return dialogBox.TypeDialog($"Nice Job Michael Vick! {enemyUnit.Monster.Base.Name} has been annihilated");
+                yield return dialogBox.TypeDialog($"Nice Job! {enemyUnit.Monster.Base.Name} has been annihilated");
                 enemyUnit.PlayDefeatAnimation();
 
                 yield return new WaitForSeconds(2f);
@@ -96,7 +98,7 @@ public class BattleSystem : MonoBehaviour
         }
         else
         {
-            yield return dialogBox.TypeDialog("Missed em :(");
+            yield return dialogBox.TypeDialog("FAILURE!");
             StartCoroutine(EnemyMove());
         }
         
@@ -121,7 +123,7 @@ public class BattleSystem : MonoBehaviour
 
         if (damageDetails.Fainted)
         {
-            yield return dialogBox.TypeDialog($"Welp looks like your {playerUnit.Monster.Base.Name}s fuckin dead");
+            yield return dialogBox.TypeDialog($"Welp looks like your {playerUnit.Monster.Base.Name}s dead");
             playerUnit.PlayDefeatAnimation();
 
             yield return new WaitForSeconds(2f);
@@ -137,12 +139,12 @@ public class BattleSystem : MonoBehaviour
     IEnumerator ShowDamageDetails(DamageDetails damageDetails)
     {
         if (damageDetails.Critical > 1f)
-            yield return dialogBox.TypeDialog("A Critical Hit! UwU");
+            yield return dialogBox.TypeDialog("A Critical Hit!");
 
         if (damageDetails.TypeEffectiveness > 1f)
             yield return dialogBox.TypeDialog("Owie! It's super effective!");
         else if (damageDetails.TypeEffectiveness < 1f)
-            yield return dialogBox.TypeDialog("Nice try Bitch! It's not very effective");
+            yield return dialogBox.TypeDialog("Nice try! It's not very effective");
     }
 
     public void HandleUpdate()
@@ -236,6 +238,7 @@ public class BattleSystem : MonoBehaviour
             dialogBox.EnableDialogText(true);
             StartCoroutine(dialogBox.TypeDialog("Aim well"));
 
+            playerAiming.ResetTries();
             playerAiming.EnableAim(true);
             playerAiming.ContinueMoving();
             state = BattleState.PlayerAim;
@@ -245,12 +248,33 @@ public class BattleSystem : MonoBehaviour
 
     void HandlePlayerAim()
     {
+        //aimParent.transform.Rotate(0f, 0f, 1f);
 
         if (Input.GetKeyDown(KeyCode.Z))
         {
             playerAiming.PauseMoving();
             dialogBox.EnableDialogText(true);
-            StartCoroutine(PerformPlayerMove());
+            StartCoroutine(PerformAimCheck());
+
+            if(playerAiming.GetTries() == 2)
+                StartCoroutine(PerformPlayerMove());
         }
+    }
+
+    IEnumerator PerformAimCheck()
+    {
+        if (playerAiming.HitEnemy())
+        {
+            yield return dialogBox.TypeDialog("HIT!");
+            playerAiming.AddTry(true);
+        }
+        else
+        {
+            yield return dialogBox.TypeDialog("MISS!");
+            playerAiming.AddTry(false);
+        }
+
+        yield return new WaitForSeconds(1f);
+        playerAiming.ContinueMoving();
     }
 }

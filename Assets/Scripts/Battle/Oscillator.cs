@@ -7,7 +7,9 @@ using UnityEngine.UI;
 public class Oscillator : MonoBehaviour
 {
     [SerializeField] Vector3 movementVector = new Vector3(10f, 10f, 10f);
+    [SerializeField] Vector3 movementVector2 = new Vector3(4f, 10f, 10f);
     [SerializeField] float period = 2f;
+    [SerializeField] float period2 = 5f;
     [SerializeField] Image crosshairs;
     [SerializeField] BattleUnit enemyUnit;
 
@@ -19,11 +21,21 @@ public class Oscillator : MonoBehaviour
     bool paused;
     bool enemyHit;
 
+    int hits;
+    int tries;
+
+    float startPeriod;
+    float startPeriod2;
+
     // Start is called before the first frame update
     void Start()
     {
+        startPeriod = period;
+        startPeriod2 = period2;
         paused = false;
         enemyHit = false;
+        hits = 0;
+        tries = 0;
         startingPos = transform.position;
         currentPos = startingPos;
     }
@@ -42,19 +54,25 @@ public class Oscillator : MonoBehaviour
             movementFactor = rawSinWave / 2f + 0.5f;
 
             Vector3 offSet = movementFactor * movementVector;
-            transform.position = startingPos + offSet;
+
+            float cycles2 = Time.time / period2; //grows continually from 0
+            float rawSinWave2 = Mathf.Sin(cycles2 * tau); //Goes from -1 to +1
+            movementFactor = rawSinWave2 / 2f + 0.5f;
+            Vector3 xSet = movementFactor * movementVector2;
+
+            transform.position = startingPos + offSet + xSet;
             currentPos = transform.position;
         }
         else
         {
             transform.position = currentPos;
         }
-        Debug.Log(enemyHit);
+
     }
 
     private void OnTriggerStay2D(Collider2D collided)
     {
-        if (collided == enemyUnit.GetComponent<CircleCollider2D>())
+        if (collided == enemyUnit.GetComponent<Collider2D>())
         {
             enemyHit = true;
         }
@@ -64,7 +82,7 @@ public class Oscillator : MonoBehaviour
 
     private void OnTriggerExit2D(Collider2D collided)
     {
-        if (collided == enemyUnit.GetComponent<CircleCollider2D>())
+        if (collided == enemyUnit.GetComponent<Collider2D>())
         {
             enemyHit = false;
         }
@@ -88,5 +106,33 @@ public class Oscillator : MonoBehaviour
     public bool HitEnemy()
     {
         return enemyHit;
+    }
+
+    public int GetHits()
+    {
+        return hits;
+    }
+
+    public void ResetTries()
+    {
+        tries = 0;
+        period = startPeriod;
+        period2 = startPeriod2;
+    }
+
+    public void AddTry(bool hitSuccess)
+    {
+        tries++;
+
+        if (hitSuccess)
+            hits++;
+
+        period = (float)(period / 1.5);
+        period2 = (float)(period2 / 1.5);
+    }
+
+    public int GetTries()
+    {
+        return tries;
     }
 }
