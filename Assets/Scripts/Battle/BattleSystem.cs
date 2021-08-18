@@ -48,7 +48,7 @@ public class BattleSystem : MonoBehaviour
     private void PlayerAction()
     {
         state = BattleState.PlayerAction;
-        StartCoroutine(dialogBox.TypeDialog("Do somthin bout it"));
+        StartCoroutine(dialogBox.TypeDialog("Are you going to fight or run like a COWARD"));
         dialogBox.EnableActionSelector(true);
     }
 
@@ -67,10 +67,24 @@ public class BattleSystem : MonoBehaviour
 
         state = BattleState.Busy;
 
+        /*
         //Switch for whether hit enemy 1 - 3 times
+        switch (playerAiming.GetHits())
+        {
+            case 1:
+                // code block
+                break;
+            case y:
+                // code block
+                break;
+            default:
+                // code block
+                break;
+        } */
+
         if (playerAiming.GetHits() > 0)
         {
-            yield return dialogBox.TypeDialog("SUCCESS!");
+            yield return dialogBox.TypeDialog($"SUCCESS! a {playerAiming.GetStrike()} Strike");
             var move = playerUnit.Monster.Moves[currentMove];
             yield return dialogBox.TypeDialog($"{playerUnit.Monster.Base.Name} used {move.Base.Name}");
 
@@ -242,22 +256,16 @@ public class BattleSystem : MonoBehaviour
             playerAiming.EnableAim(true);
             playerAiming.ContinueMoving();
             state = BattleState.PlayerAim;
-            //StartCoroutine(PerformPlayerMove());
         }
     }
 
     void HandlePlayerAim()
     {
-        //aimParent.transform.Rotate(0f, 0f, 1f);
-
         if (Input.GetKeyDown(KeyCode.Z))
         {
             playerAiming.PauseMoving();
             dialogBox.EnableDialogText(true);
             StartCoroutine(PerformAimCheck());
-
-            if(playerAiming.GetTries() == 2)
-                StartCoroutine(PerformPlayerMove());
         }
     }
 
@@ -265,16 +273,21 @@ public class BattleSystem : MonoBehaviour
     {
         if (playerAiming.HitEnemy())
         {
-            yield return dialogBox.TypeDialog("HIT!");
             playerAiming.AddTry(true);
+            yield return dialogBox.TypeDialog($"HIT! x {playerAiming.GetHits()}");
         }
         else
         {
-            yield return dialogBox.TypeDialog("MISS!");
             playerAiming.AddTry(false);
+            yield return dialogBox.TypeDialog("MISS!");
         }
 
-        yield return new WaitForSeconds(1f);
-        playerAiming.ContinueMoving();
+        if((playerAiming.GetTries() == 3) || playerAiming.HasMissed())
+            StartCoroutine(PerformPlayerMove());
+        else
+        {
+            yield return new WaitForSeconds(1f);
+            playerAiming.ContinueMoving();
+        }
     }
 }

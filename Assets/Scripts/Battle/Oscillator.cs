@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
+public enum StrikeState { Weak, Strong, Critical }
+
 [DisallowMultipleComponent]
 public class Oscillator : MonoBehaviour
 {
@@ -20,6 +22,7 @@ public class Oscillator : MonoBehaviour
 
     bool paused;
     bool enemyHit;
+    bool missedEnemy;
 
     int hits;
     int tries;
@@ -27,9 +30,12 @@ public class Oscillator : MonoBehaviour
     float startPeriod;
     float startPeriod2;
 
+    StrikeState strike;
+
     // Start is called before the first frame update
     void Start()
     {
+        missedEnemy = false;
         startPeriod = period;
         startPeriod2 = period2;
         paused = false;
@@ -116,6 +122,7 @@ public class Oscillator : MonoBehaviour
     public void ResetTries()
     {
         tries = 0;
+        hits = 0;
         period = startPeriod;
         period2 = startPeriod2;
     }
@@ -134,5 +141,31 @@ public class Oscillator : MonoBehaviour
     public int GetTries()
     {
         return tries;
+    }
+
+    public bool HasMissed()
+    {
+        return !enemyHit;
+    }
+
+    public string GetStrike()
+    {
+        string strike;
+        switch (hits)
+        {
+            case 1:
+                strike = "WEAK";
+                break;
+            case 2:
+                strike = "STRONG";
+                break;
+            case 3:
+                strike = "CRITICAL";
+                break;
+            default:
+                strike = "NOPE";
+                break;
+        }
+        return strike;
     }
 }
