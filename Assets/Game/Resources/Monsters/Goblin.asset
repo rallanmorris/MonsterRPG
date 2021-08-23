@@ -1,0 +1,33 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bf66e8a38ac74ce49bd4a0a2e30008e8, type: 3}
+  m_Name: Goblin
+  m_EditorClassIdentifier: 
+  name: Goblin
+  description: 
+  frontSprite: {fileID: 4723107735738678597, guid: 0043adb94efe3984b8c4500c54cdd8e7,
+    type: 3}
+  backSprite: {fileID: 4723107735738678597, guid: 0043adb94efe3984b8c4500c54cdd8e7,
+    type: 3}
+  type1: 1
+  type2: 5
+  maxHp: 45
+  attack: 45
+  defense: 45
+  spAttack: 45
+  spDefense: 45
+  speed: 45
+  learnableMoves:
+  - moveBase: {fileID: 11400000, guid: 4ceddf955367f204ab1b145f05635902, type: 2}
+    level: 3
+  - moveBase: {fileID: 11400000, guid: 5fbd16b8c3c07bb4883d3b36841b909b, type: 2}
+    level: 7
