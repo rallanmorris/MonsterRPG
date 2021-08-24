@@ -16,6 +16,7 @@ public class BattleSystem : MonoBehaviour
     [SerializeField] BattleHud enemyHud;
 
     [SerializeField] BattleDialogBox dialogBox;
+    [SerializeField] MonsterController playerMonster;
 
     //Bool: true for win false for defeat
     public event Action<bool> OnBattleOver;
@@ -163,6 +164,7 @@ public class BattleSystem : MonoBehaviour
 
     public void HandleUpdate()
     {
+        Debug.Log(state);
         if(state == BattleState.PlayerAction)
         {
             HandleActionSelection();
@@ -177,8 +179,17 @@ public class BattleSystem : MonoBehaviour
         {
             HandlePlayerAim();
         }
+
+        else if(state == BattleState.EnemyMove)
+        {
+            HandlePlayerMovement();
+        }
     }
 
+    void HandlePlayerMovement()
+    {
+        playerMonster.HandleUpdate();
+    }
 
     void HandleActionSelection()
     {
