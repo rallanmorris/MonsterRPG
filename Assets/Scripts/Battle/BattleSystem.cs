@@ -3,13 +3,14 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public enum BattleState { Start, PlayerAction, PlayerMove, PlayerAim, EnemyMove, Busy }
+public enum BattleState { Start, PlayerAction, PlayerMove, PlayerAim, EnemyAim, EnemyMove, Busy }
 
 public class BattleSystem : MonoBehaviour
 {
     [SerializeField] BattleUnit playerUnit;
     [SerializeField] BattleHud playerHud;
     [SerializeField] Oscillator playerAiming;
+    [SerializeField] Oscillator enemyAiming;
     [SerializeField] GameObject aimParent;
 
     [SerializeField] BattleUnit enemyUnit;
@@ -17,6 +18,7 @@ public class BattleSystem : MonoBehaviour
 
     [SerializeField] BattleDialogBox dialogBox;
     [SerializeField] MonsterController playerMonster;
+    [SerializeField] MonsterController enemyMonster;
 
     //Bool: true for win false for defeat
     public event Action<bool> OnBattleOver;
@@ -35,6 +37,7 @@ public class BattleSystem : MonoBehaviour
         playerUnit.Setup();
         playerHud.SetData(playerUnit.Monster);
         playerAiming.EnableAim(false);
+        enemyAiming.EnableAim(false);
 
         enemyUnit.Setup();
         enemyHud.SetData(enemyUnit.Monster);
@@ -49,11 +52,18 @@ public class BattleSystem : MonoBehaviour
     private void PlayerAction()
     {
         state = BattleState.PlayerAction;
-        StartCoroutine(dialogBox.TypeDialog("Are you going to fight or run like a COWARD"));
+        StartCoroutine(dialogBox.TypeDialog("Do your worst"));
         dialogBox.EnableActionSelector(true);
     }
 
-    void PlayerMove()
+    void MovePlayer()
+    {
+        state = BattleState.Busy;
+        dialogBox.EnableActionSelector(false);
+        dialogBox.EnableDialogText(false);
+    }
+
+    void PlayerAttack()
     {
         state = BattleState.PlayerMove;
         dialogBox.EnableActionSelector(false);
@@ -67,21 +77,6 @@ public class BattleSystem : MonoBehaviour
         playerAiming.EnableAim(false);
 
         state = BattleState.Busy;
-
-        /*
-        //Switch for whether hit enemy 1 - 3 times
-        switch (playerAiming.GetHits())
-        {
-            case 1:
-                // code block
-                break;
-            case y:
-                // code block
-                break;
-            default:
-                // code block
-                break;
-        } */
 
         if (playerAiming.GetHits() > 0)
         {
@@ -108,23 +103,28 @@ public class BattleSystem : MonoBehaviour
             }
             else
             {
-                StartCoroutine(EnemyMove());
+                enemyAiming.Setup();
+                state = BattleState.EnemyAim;
             }
         }
         else
         {
             yield return dialogBox.TypeDialog("FAILURE!");
-            StartCoroutine(EnemyMove());
+            enemyAiming.Setup();
+            state = BattleState.EnemyAim;
         }
         
     }
 
     IEnumerator EnemyMove()
     {
-        state = BattleState.EnemyMove;
+        yield return new WaitForSeconds(1f);
+        enemyAiming.EnableAim(false);
 
+        state = BattleState.Busy;
+
+        /*
         var move = enemyUnit.Monster.GetRandomMove();
-
         yield return dialogBox.TypeDialog($"{enemyUnit.Monster.Base.Name} used {move.Base.Name}");
 
         enemyUnit.PlayAttackAnimation();
@@ -146,6 +146,42 @@ public class BattleSystem : MonoBehaviour
         }
         else
         {
+            PlayerAction();
+        }
+        */
+
+
+        if (enemyAiming.GetHits() > 0)
+        {
+            yield return dialogBox.TypeDialog($"SUCCESS! a {enemyAiming.GetStrike()} Strike");
+            var move = enemyUnit.Monster.GetRandomMove();
+            yield return dialogBox.TypeDialog($"{enemyUnit.Monster.Base.Name} used {move.Base.Name}");
+
+            enemyUnit.PlayAttackAnimation();
+            yield return new WaitForSeconds(1f);
+
+            playerUnit.PlayHitAnimation();
+
+            var damageDetails = playerUnit.Monster.TakeDamage(move, enemyUnit.Monster);
+            yield return playerHud.UpdateHP();
+            yield return ShowDamageDetails(damageDetails);
+
+            if (damageDetails.Fainted)
+            {
+                yield return dialogBox.TypeDialog($"Welp looks like your {playerUnit.Monster.Base.Name}s dead");
+                playerUnit.PlayDefeatAnimation();
+
+                yield return new WaitForSeconds(2f);
+                OnBattleOver(false);
+            }
+            else
+            {
+                PlayerAction();
+            }
+        }
+        else
+        {
+            yield return dialogBox.TypeDialog("FAILURE!");
             PlayerAction();
         }
 
@@ -177,30 +213,38 @@ public class BattleSystem : MonoBehaviour
 
         else if(state == BattleState.PlayerAim)
         {
+            enemyMonster.HandleEnemyUpdate();
             HandlePlayerAim();
         }
 
         else if(state == BattleState.EnemyMove)
         {
-            HandlePlayerMovement();
+            //HandlePlayerMovement();
         }
+
+        else if (state == BattleState.EnemyAim)
+        {
+            HandlePlayerMovement();
+            HandleEnemyAim();
+        }
+
     }
 
     void HandlePlayerMovement()
     {
-        playerMonster.HandleUpdate();
+        playerMonster.HandlePlayerUpdate();
     }
 
     void HandleActionSelection()
     {
-        if (Input.GetKeyDown(KeyCode.DownArrow))
+        if (Input.GetKeyDown(KeyCode.RightArrow))
         {
-            if (currentAction < 1)
+            if (currentAction < 2)
             {
                 ++currentAction;
             }
         }
-        else if (Input.GetKeyDown(KeyCode.UpArrow))
+        else if (Input.GetKeyDown(KeyCode.LeftArrow))
         {
             if (currentAction > 0)
             {
@@ -213,10 +257,14 @@ public class BattleSystem : MonoBehaviour
         {
             if (currentAction == 0)
             {
-                //Fight
-                PlayerMove();
+                //Attack
+                PlayerAttack();
             }
             else if (currentAction == 1)
+            {
+                MovePlayer();
+            }
+            else if (currentAction == 2)
             {
                 //run
             }
@@ -263,42 +311,67 @@ public class BattleSystem : MonoBehaviour
             dialogBox.EnableDialogText(true);
             StartCoroutine(dialogBox.TypeDialog("Aim well"));
 
-            playerAiming.ResetTries();
-            playerAiming.EnableAim(true);
-            playerAiming.ContinueMoving();
+            playerAiming.Setup();
             state = BattleState.PlayerAim;
         }
     }
 
     void HandlePlayerAim()
     {
+        playerAiming.HandleUpdate();
+
         if (Input.GetKeyDown(KeyCode.Z))
         {
             playerAiming.PauseMoving();
             dialogBox.EnableDialogText(true);
-            StartCoroutine(PerformAimCheck());
+            StartCoroutine(PerformAimCheck(playerAiming));
         }
     }
 
-    IEnumerator PerformAimCheck()
+    void HandleEnemyAim()
     {
-        if (playerAiming.HitEnemy())
+        //Wiggles enemy crosshair
+        enemyAiming.HandleUpdate();
+
+        if (enemyAiming.WillShoot())
         {
-            playerAiming.AddTry(true);
-            yield return dialogBox.TypeDialog($"HIT! x {playerAiming.GetHits()}");
+            enemyAiming.SetCurrentlyShooting(true);
+            enemyAiming.PauseMoving();
+            dialogBox.EnableDialogText(true);
+            StartCoroutine(PerformAimCheck(enemyAiming));
+        }
+    }
+
+    IEnumerator PerformAimCheck(Oscillator attacker)
+    {
+        if (attacker.HitEnemy())
+        {
+            attacker.AddTry(true);
+            yield return dialogBox.TypeDialog($"HIT! x {attacker.GetHits()}");
         }
         else
         {
-            playerAiming.AddTry(false);
+            attacker.AddTry(false);
             yield return dialogBox.TypeDialog("MISS!");
         }
 
-        if((playerAiming.GetTries() == 3) || playerAiming.HasMissed())
-            StartCoroutine(PerformPlayerMove());
+        //Debug.Log(attacker.GetTries());
+        if ((attacker.GetTries() >= 3)) //|| attacker.HasMissed())
+        {
+            if (attacker.IsPlayer())
+                StartCoroutine(PerformPlayerMove());
+            else
+            {
+                state = BattleState.EnemyMove;
+                playerMonster.StopMoveAnimation();
+                StartCoroutine(EnemyMove());
+            }
+                
+        }
         else
         {
-            yield return new WaitForSeconds(1f);
-            playerAiming.ContinueMoving();
+            yield return new WaitForSeconds(0.5f);
+            attacker.ContinueMoving();
         }
     }
 }

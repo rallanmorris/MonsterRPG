@@ -24,8 +24,11 @@ public class PlayerController : MonoBehaviour
 
     public void HandleUpdate()
     {
+        //Set off encountered action all the time to test battle system
+        OnEncountered();
+
         //If the player is not currently moving
-        if(!isMoving)
+        if (!isMoving)
         {
             //Setting input x and y values to player input
             input.x = Input.GetAxisRaw("Horizontal");

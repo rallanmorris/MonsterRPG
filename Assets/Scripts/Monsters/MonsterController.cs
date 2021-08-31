@@ -5,13 +5,17 @@ using UnityEngine;
 
 public class MonsterController : MonoBehaviour
 {
+    public MonsterController MonsterCon { get; set; }
+
+    [SerializeField] Vector3 range;
     public float moveSpeed;
     public LayerMask solidObjectsLayer;
     //public LayerMask grassLayer;
 
     public event Action OnEncountered;
 
-    private bool isMoving;
+    public bool isMoving;
+    public bool isStopped;
     private Vector2 input;
 
     private Animator animator;
@@ -22,10 +26,10 @@ public class MonsterController : MonoBehaviour
         animator = GetComponent<Animator>();
     }
 
-    public void HandleUpdate()
+    public void HandlePlayerUpdate()
     {
         //If the monster is not currently moving
-        if (!isMoving)
+        if (!isMoving && !isStopped)
         {
             //Setting input x and y values to player input
             input.x = Input.GetAxisRaw("Horizontal");
@@ -50,8 +54,17 @@ public class MonsterController : MonoBehaviour
                 }
             }
         }
+        
 
         animator.SetBool("isMoving", isMoving);
+    }
+
+    public void HandleEnemyUpdate()
+    {
+        if(!isMoving)
+        {
+            MoveRandomly(range);
+        }
     }
 
     IEnumerator Move(Vector3 targetPos)
@@ -59,7 +72,7 @@ public class MonsterController : MonoBehaviour
         isMoving = true;
 
         //Move player until reaches target
-        while ((targetPos - transform.position).sqrMagnitude > Mathf.Epsilon)
+        while (((targetPos - transform.position).sqrMagnitude > Mathf.Epsilon + 0.0001))
         {
             transform.position = Vector3.MoveTowards(transform.position, targetPos, moveSpeed * Time.deltaTime);
             yield return null;
@@ -67,8 +80,25 @@ public class MonsterController : MonoBehaviour
         transform.position = targetPos;
 
         isMoving = false;
+        //isStopped = false;
 
         //CheckForEncounters();
+    }
+
+    public void MoveRandomly(Vector3 range)
+    {
+        var targetPos = transform.position;
+        targetPos.x += UnityEngine.Random.Range(-range.x, range.x);
+        targetPos.y += UnityEngine.Random.Range(-range.y, range.y);
+
+        if (IsWalkable(targetPos))
+            StartCoroutine(Move(targetPos));
+    }
+
+    public void StopMoveAnimation()
+    {
+        isMoving = false;
+        animator.SetBool("isMoving", isMoving);
     }
 
     /*private void CheckForEncounters()
