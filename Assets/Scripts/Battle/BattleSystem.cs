@@ -22,17 +22,22 @@ public class BattleSystem : MonoBehaviour
     int currentAction;
     int currentMove;
 
-    public void StartBattle()
+    MonsterParty playerParty;
+    Monster wildMonster;
+
+    public void StartBattle(MonsterParty playerParty, Monster wildMonster)
     {
+        this.playerParty = playerParty;
+        this.wildMonster = wildMonster;
         StartCoroutine(SetupBattle());
     }
 
     private IEnumerator SetupBattle()
     {
-        playerUnit.Setup();
+        playerUnit.Setup(playerParty.GetHealthyMonster());
         playerHud.SetData(playerUnit.Monster);
 
-        enemyUnit.Setup();
+        enemyUnit.Setup(wildMonster);
         enemyHud.SetData(enemyUnit.Monster);
 
         dialogBox.SetMoveNames(playerUnit.Monster.Moves);
@@ -110,7 +115,24 @@ public class BattleSystem : MonoBehaviour
             playerUnit.PlayDefeatAnimation();
 
             yield return new WaitForSeconds(2f);
-            OnBattleOver(false);
+
+            var nextMonster = playerParty.GetHealthyMonster();
+            if(nextMonster != null)
+            {
+                playerUnit.Setup(nextMonster);
+                playerHud.SetData(nextMonster);
+
+                dialogBox.SetMoveNames(nextMonster.Moves);
+
+                yield return dialogBox.TypeDialog($"Go {nextMonster.Base.Name}!");
+
+                PlayerAction();
+            }
+            else
+            {
+                OnBattleOver(false);
+            }
+            
         }
         else
         {
