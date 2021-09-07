@@ -2,6 +2,8 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.InputSystem;
+using UnityEngine.UI;
 
 public class PlayerController : MonoBehaviour
 {
@@ -13,26 +15,43 @@ public class PlayerController : MonoBehaviour
 
     private bool isMoving;
     private Vector2 input;
+    private Vector2 moveActionInput;
 
     private Animator animator;
+
+    [SerializeField] GameObject playerGun;
+    Vector3 oldAimVector;
 
     private void Awake()
     {
         //Setting animator on awake
         animator = GetComponent<Animator>();
+
+        oldAimVector = new Vector3(0, 0, 0);
+    }
+
+    public void Movement(InputAction.CallbackContext context)
+    {
+        moveActionInput = context.ReadValue<Vector2>();
+    }
+
+    public void AimGun(InputAction.CallbackContext context)
+    {
+        Debug.Log(context.ReadValue<Vector2>());
     }
 
     public void HandleUpdate()
     {
         //Set off encountered action all the time to test battle system
-        OnEncountered();
+        //OnEncountered();
 
         //If the player is not currently moving
         if (!isMoving)
         {
             //Setting input x and y values to player input
-            input.x = Input.GetAxisRaw("Horizontal");
-            input.y = Input.GetAxisRaw("Vertical");
+            //input.x = Input.GetAxisRaw("Horizontal");
+            //input.y = Input.GetAxisRaw("Vertical");
+            input = moveActionInput;
 
             //If there is any player input
             if (input != Vector2.zero)
