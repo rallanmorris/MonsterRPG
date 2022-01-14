@@ -22,12 +22,20 @@ public class PlayerController : MonoBehaviour
     [SerializeField] GameObject playerGun;
     Vector3 oldAimVector;
 
+    Rigidbody2D rb;
+    Rigidbody2D gunRB;
+    Vector2 lookDirection;
+    public float aimAngle;
+
     private void Awake()
     {
         //Setting animator on awake
         animator = GetComponent<Animator>();
 
         oldAimVector = new Vector3(0, 0, 0);
+        aimAngle = 0f;
+        rb = GetComponent<Rigidbody2D>();
+        gunRB = playerGun.GetComponent<Rigidbody2D>();
     }
 
     public void Movement(InputAction.CallbackContext context)
@@ -37,7 +45,16 @@ public class PlayerController : MonoBehaviour
 
     public void AimGun(InputAction.CallbackContext context)
     {
-        Debug.Log(context.ReadValue<Vector2>());
+        //Debug.Log(context.ReadValue<Vector2>());
+
+        lookDirection = context.ReadValue<Vector2>();
+        aimAngle = Mathf.Atan2(lookDirection.y, lookDirection.x) * Mathf.Rad2Deg - 180f;
+        gunRB.rotation = aimAngle;
+    }
+
+    public float GetAimAngle()
+    {
+        return aimAngle;
     }
 
     public void HandleUpdate()

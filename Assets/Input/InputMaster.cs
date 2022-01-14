@@ -27,7 +27,7 @@ public class @InputMaster : IInputActionCollection, IDisposable
                     ""interactions"": """"
                 },
                 {
-                    ""name"": ""Fire"",
+                    ""name"": ""PullTrigger"",
                     ""type"": ""Button"",
                     ""id"": ""e4346611-9a17-4e94-b223-ae0ffe2b7555"",
                     ""expectedControlType"": ""Button"",
@@ -106,7 +106,7 @@ public class @InputMaster : IInputActionCollection, IDisposable
                     ""interactions"": """",
                     ""processors"": """",
                     ""groups"": ""Xbox Control Scheme"",
-                    ""action"": ""Fire"",
+                    ""action"": ""PullTrigger"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
                 },
@@ -141,7 +141,7 @@ public class @InputMaster : IInputActionCollection, IDisposable
         // Player
         m_Player = asset.FindActionMap("Player", throwIfNotFound: true);
         m_Player_Movement = m_Player.FindAction("Movement", throwIfNotFound: true);
-        m_Player_Fire = m_Player.FindAction("Fire", throwIfNotFound: true);
+        m_Player_PullTrigger = m_Player.FindAction("PullTrigger", throwIfNotFound: true);
         m_Player_AimGun = m_Player.FindAction("AimGun", throwIfNotFound: true);
     }
 
@@ -193,14 +193,14 @@ public class @InputMaster : IInputActionCollection, IDisposable
     private readonly InputActionMap m_Player;
     private IPlayerActions m_PlayerActionsCallbackInterface;
     private readonly InputAction m_Player_Movement;
-    private readonly InputAction m_Player_Fire;
+    private readonly InputAction m_Player_PullTrigger;
     private readonly InputAction m_Player_AimGun;
     public struct PlayerActions
     {
         private @InputMaster m_Wrapper;
         public PlayerActions(@InputMaster wrapper) { m_Wrapper = wrapper; }
         public InputAction @Movement => m_Wrapper.m_Player_Movement;
-        public InputAction @Fire => m_Wrapper.m_Player_Fire;
+        public InputAction @PullTrigger => m_Wrapper.m_Player_PullTrigger;
         public InputAction @AimGun => m_Wrapper.m_Player_AimGun;
         public InputActionMap Get() { return m_Wrapper.m_Player; }
         public void Enable() { Get().Enable(); }
@@ -214,9 +214,9 @@ public class @InputMaster : IInputActionCollection, IDisposable
                 @Movement.started -= m_Wrapper.m_PlayerActionsCallbackInterface.OnMovement;
                 @Movement.performed -= m_Wrapper.m_PlayerActionsCallbackInterface.OnMovement;
                 @Movement.canceled -= m_Wrapper.m_PlayerActionsCallbackInterface.OnMovement;
-                @Fire.started -= m_Wrapper.m_PlayerActionsCallbackInterface.OnFire;
-                @Fire.performed -= m_Wrapper.m_PlayerActionsCallbackInterface.OnFire;
-                @Fire.canceled -= m_Wrapper.m_PlayerActionsCallbackInterface.OnFire;
+                @PullTrigger.started -= m_Wrapper.m_PlayerActionsCallbackInterface.OnPullTrigger;
+                @PullTrigger.performed -= m_Wrapper.m_PlayerActionsCallbackInterface.OnPullTrigger;
+                @PullTrigger.canceled -= m_Wrapper.m_PlayerActionsCallbackInterface.OnPullTrigger;
                 @AimGun.started -= m_Wrapper.m_PlayerActionsCallbackInterface.OnAimGun;
                 @AimGun.performed -= m_Wrapper.m_PlayerActionsCallbackInterface.OnAimGun;
                 @AimGun.canceled -= m_Wrapper.m_PlayerActionsCallbackInterface.OnAimGun;
@@ -227,9 +227,9 @@ public class @InputMaster : IInputActionCollection, IDisposable
                 @Movement.started += instance.OnMovement;
                 @Movement.performed += instance.OnMovement;
                 @Movement.canceled += instance.OnMovement;
-                @Fire.started += instance.OnFire;
-                @Fire.performed += instance.OnFire;
-                @Fire.canceled += instance.OnFire;
+                @PullTrigger.started += instance.OnPullTrigger;
+                @PullTrigger.performed += instance.OnPullTrigger;
+                @PullTrigger.canceled += instance.OnPullTrigger;
                 @AimGun.started += instance.OnAimGun;
                 @AimGun.performed += instance.OnAimGun;
                 @AimGun.canceled += instance.OnAimGun;
@@ -249,7 +249,7 @@ public class @InputMaster : IInputActionCollection, IDisposable
     public interface IPlayerActions
     {
         void OnMovement(InputAction.CallbackContext context);
-        void OnFire(InputAction.CallbackContext context);
+        void OnPullTrigger(InputAction.CallbackContext context);
         void OnAimGun(InputAction.CallbackContext context);
     }
 }

@@ -14,7 +14,7 @@
                     "interactions": ""
                 },
                 {
-                    "name": "Fire",
+                    "name": "PullTrigger",
                     "type": "Button",
                     "id": "e4346611-9a17-4e94-b223-ae0ffe2b7555",
                     "expectedControlType": "Button",
@@ -93,7 +93,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": "Xbox Control Scheme",
-                    "action": "Fire",
+                    "action": "PullTrigger",
                     "isComposite": false,
                     "isPartOfComposite": false
                 },
